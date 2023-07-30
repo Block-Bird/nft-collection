@@ -1,4 +1,5 @@
-// SPDX-License-Identifier: GPL-3.0
+// SPDX-License-Identifier: MIT
+
 pragma solidity ^0.8.0;
 library Strings {
     bytes16 private constant _HEX_SYMBOLS = "0123456789abcdef";
@@ -615,18 +616,18 @@ abstract contract ERC721Enumerable is ERC721, IERC721Enumerable {
 
 pragma solidity >=0.7.0 <0.9.0;
 
-contract NFT is ERC721Enumerable, Ownable {
+contract PSYD is ERC721Enumerable, Ownable {
   using Strings for uint256;
 
   string public baseURI;
   string public baseExtension = ".json";
-  uint256 public cost = 0.001 ether;
-  uint256 public maxSupply = 100;
+//   uint256 public cost = 0.001 ether;
+  uint256 public maxSupply = 200;
   uint256 public maxMintAmount = 100;
   bool public paused = false;
-  mapping(address => bool) public whitelisted;
+//   mapping(address => bool) public whitelisted;
 
-  constructor() ERC721("Shopper", "SHPR") {
+  constructor() ERC721("Psychedelic-Dreams", "PSYD") {
     setBaseURI("https://bafybeigu4e7rk2tsnm27a443li7gi2pyild4rowlpflprxwwepz4nw7x2i.ipfs.w3s.link/");
   }
 
@@ -634,22 +635,16 @@ contract NFT is ERC721Enumerable, Ownable {
     return baseURI;
   }
 
-  function mint(address _to, uint256 _mintAmount) public payable {
+  function mint(address _to, uint256 _mintAmount) public payable onlyOwner {
     uint256 supply = totalSupply();
     require(!paused);
-    require(_mintAmount > 0);
-    require(_mintAmount <= maxMintAmount);
+    require(_mintAmount > 0 && _mintAmount <= maxMintAmount);
     require(supply + _mintAmount <= maxSupply);
-
-    if (msg.sender != owner()) {
-        if(whitelisted[msg.sender] != true) {
-          require(msg.value >= cost * _mintAmount);
-        }
-    }
-
+    
     for (uint256 i = 1; i <= _mintAmount; i++) {
       _safeMint(_to, supply + i);
     }
+    
   }
 
   function walletOfOwner(address _owner)
@@ -659,9 +654,11 @@ contract NFT is ERC721Enumerable, Ownable {
   {
     uint256 ownerTokenCount = balanceOf(_owner);
     uint256[] memory tokenIds = new uint256[](ownerTokenCount);
+    
     for (uint256 i; i < ownerTokenCount; i++) {
       tokenIds[i] = tokenOfOwnerByIndex(_owner, i);
     }
+    
     return tokenIds;
   }
 
@@ -683,10 +680,6 @@ contract NFT is ERC721Enumerable, Ownable {
         : "";
   }
 
-  function setCost(uint256 _newCost) public onlyOwner {
-    cost = _newCost;
-  }
-
   function setmaxMintAmount(uint256 _newmaxMintAmount) public onlyOwner {
     maxMintAmount = _newmaxMintAmount;
   }
@@ -701,14 +694,6 @@ contract NFT is ERC721Enumerable, Ownable {
 
   function pause(bool _state) public onlyOwner {
     paused = _state;
-  }
- 
-  function whitelistUser(address _user) public onlyOwner {
-    whitelisted[_user] = true;
-  }
- 
-  function removeWhitelistUser(address _user) public onlyOwner {
-    whitelisted[_user] = false;
   }
 
   function withdraw() public payable onlyOwner {
